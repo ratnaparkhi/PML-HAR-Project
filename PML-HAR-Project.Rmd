@@ -1,0 +1,144 @@
+# Practical Machine Learning - Human Activity Recognition
+[Author: Prashant Ratnaparkhi]
+
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+#date()
+library(caret)
+setwd("d:\\prashant\\coursera-dsc\\pml\\a1")
+bcTrainOrig <- read.csv("pml-training.csv", header=TRUE)
+bcTestOrig <- read.csv("pml-testing.csv", header=TRUE)
+na1 = is.na(bcTestOrig[1,])
+bcTrain11 = subset(bcTrainOrig, select = !na1)
+#dim(bcTrain11)
+
+bcTest11 = subset(bcTestOrig, select = !na1)
+#dim(bcTest11)
+
+bcTrain = bcTrain11[, 8:60] 
+bcTest = bcTest11[, 8:60]
+inTr = createDataPartition(y=bcTrain$classe, p = 0.6, list=FALSE)
+forTrain = bcTrain[inTr,]
+#dim(forTrain)
+forCV = bcTrain[-inTr,] ## Data set for evaluation and calculating out of sample err
+#dim(forCV)
+
+set.seed(5432)
+## Train model, use repeated CV, with five folds and repated five times. 
+# First lm and then rf 
+
+fitControl = trainControl(method='repeatedcv', number = 5, repeats = 5)
+#date()
+mFL1 = train(classe ~ ., model="lm", data=forTrain, trControl = fitControl)
+#date()
+mFL = train(classe ~ ., model="rf", data=forTrain, trControl = fitControl)
+#date()
+
+## Calculate the predicted values on the training & evaluation datasets using 
+## linear model. 
+
+predCV1 = predict(mFL1, forCV)
+tblCV1 = table(predCV1, forCV$classe)
+predTrain1 = predict(mFL1, forTrain)
+tblTrain1 = table(predTrain1, forTrain$classe)
+
+inaccuratePredInSample1 = sum(predTrain1 != forTrain$classe)
+numInSample1 = sum(tblTrain1)
+inSampleErrorRate1 = inaccuratePredInSample1 / numInSample1
+
+#print(tblTrain1)
+#print(inSampleErrorRate1)
+
+inaccuratePredOutOfSample1 = sum(predCV1 != forCV$classe)
+numOutOfSample1 = sum(tblCV1)
+outOfSampleErrorRate1 = inaccuratePredOutOfSample1 / numOutOfSample1
+
+#print(tblCV1)
+#print(outOfSampleErrorRate1)
+
+## Calculate the predicted values on the training & evaluation datasets using 
+## rf model. 
+
+predCV = predict(mFL, forCV)
+tblCV = table(predCV, forCV$classe)
+predTrain = predict(mFL, forTrain)
+tblTrain = table(predTrain, forTrain$classe)
+
+inaccuratePredInSample = sum(predTrain != forTrain$classe)
+numInSample = sum(tblTrain)
+inSampleErrorRate = inaccuratePredInSample / numInSample
+
+#print(tblTrain)
+#print(inSampleErrorRate)
+
+inaccuratePredOutOfSample = sum(predCV != forCV$classe)
+numOutOfSample = sum(tblCV)
+outOfSampleErrorRate = inaccuratePredOutOfSample / numOutOfSample
+
+#print(tblCV)
+#print(outOfSampleErrorRate)
+
+## Calculate the prdicted values on the specified test data set.
+forTest = bcTest[1:52]
+predTest = predict(mFL, forTest)
+
+ansList = as.character(predTest) ## To make a char vector to be written to files
+## Write answers in files and create the files
+pml_write_files = function(x)
+{
+        n = length(x)
+        for(i in 1:n)
+        {
+                filename = paste0("problem_id_",i,".txt")
+                write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+        }  
+}
+
+## 
+setwd("d:\\prashant\\coursera-dsc\\pml\\a1\\answers")
+pml_write_files(ansList)
+setwd("d:\\prashant\\coursera-dsc\\pml\\a1")
+#date()
+
+```
+
+The goal of the project is to predict the manner in which the participants did the 
+exercise. This is the "classe" variable in the training set.
+
+## Pre-processing of the input data.  
+Remove records with NA values from both training and test datasets. 
+Create the required subset of data - many columns (specifically, the derived ones) are empty or NA in the test data set. So remove such columns from both - training & 
+test data sets.  These columns can not be used as features for traininig, as they are 
+derived and are absent from the given test data.
+The first 7 columns are - X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, and num_window. These are not the actual readings/measurements and so not used as features for training. Hence, remove first 7 columns, as they will not be part of the model.
+
+This gives 52 features (13 readings each, from the four - arm, belt, forearm and dumbbell - sensors). 
+
+Out of this trainig set, keep aside 40% for cross validation/evaluation, and to calculate the out of sample error rate. 
+
+## Training and model selection. 
+First train a linear model (lm) using train function. 
+Then train a random forest model using train function.
+Comapre the two models for in-sample and out-of-sample errors.
+Here the out-of-sample error rates are calculated using the cross validation 
+data set - set aside from the training data set itself.
+
+Note: Both the models are trained using all the 52 features to predict 'classe'
+
+1) Comparison of the two models
+
+The in-sample error rate for linear model is `r inSampleErrorRate1`.
+
+The out-of-sample error rate for linear model is `r outOfSampleErrorRate1`.
+
+The prediction table for linear model on cross validation set is printed below:
+`r tblCV1`
+
+The in-sample error rate for random forest model is `r inSampleErrorRate`.
+
+The out-of-sample error rate for random forest model is `r outOfSampleErrorRate`.
+
+The prediction table for random forest model on cross validation set is printed below:
+`r tblCV`
+
+Both the models have same in-sample error rates, and out-of-sample error rates are also close to each other. In general, random forest models make more accurate predictions; hence random forest model is used for our purposes here. This, rf model is then used to predict the values of classe on the test dataset. 
+

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=9" >
+
+<title>Practical Machine Learning - Human Activity Recognition</title>
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 12px;
+   margin: 8px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 { 
+   font-size:2.2em; 
+}
+
+h2 { 
+   font-size:1.8em; 
+}
+
+h3 { 
+   font-size:1.4em; 
+}
+
+h4 { 
+   font-size:1.0em; 
+}
+
+h5 { 
+   font-size:0.9em; 
+}
+
+h6 { 
+   font-size:0.8em; 
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre {	
+   margin-top: 0;
+   max-width: 95%;
+   border: 1px solid #ccc;
+   white-space: pre-wrap;
+}
+
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code.r, code.cpp {
+   background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * { 
+      background: transparent !important; 
+      color: black !important; 
+      filter:none !important; 
+      -ms-filter: none !important; 
+   }
+
+   body { 
+      font-size:12pt; 
+      max-width:100%; 
+   }
+       
+   a, a:visited { 
+      text-decoration: underline; 
+   }
+
+   hr { 
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote { 
+      padding-right: 1em; 
+      page-break-inside: avoid; 
+   }
+
+   tr, img { 
+      page-break-inside: avoid; 
+   }
+
+   img { 
+      max-width: 100% !important; 
+   }
+
+   @page :left { 
+      margin: 15mm 20mm 15mm 10mm; 
+   }
+     
+   @page :right { 
+      margin: 15mm 10mm 15mm 20mm; 
+   }
+
+   p, h2, h3 { 
+      orphans: 3; widows: 3; 
+   }
+
+   h2, h3 { 
+      page-break-after: avoid; 
+   }
+}
+
+</style>
+
+
+
+
+
+</head>
+
+<body>
+<h1>Practical Machine Learning - Human Activity Recognition</h1>
+
+<p>[Author: Prashant Ratnaparkhi]</p>
+
+<p>The goal of the project is to predict the manner in which the participants did the 
+exercise. This is the &ldquo;classe&rdquo; variable in the training set.</p>
+
+<h2>Pre-processing of the input data.</h2>
+
+<p>Remove records with NA values from both training and test datasets. 
+Create the required subset of data - many columns (specifically, the derived ones) are empty or NA in the test data set. So remove such columns from both - training &amp; 
+test data sets.  These columns can not be used as features for traininig, as they are 
+derived and are absent from the given test data.
+The first 7 columns are - X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, and num_window. These are not the actual readings/measurements and so not used as features for training. Hence, remove first 7 columns, as they will not be part of the model.</p>
+
+<p>This gives 52 features (13 readings each, from the four - arm, belt, forearm and dumbbell - sensors). </p>
+
+<p>Out of this trainig set, keep aside 40% for cross validation/evaluation, and to calculate the out of sample error rate. </p>
+
+<h2>Training and model selection.</h2>
+
+<p>First train a linear model (lm) using train function. 
+Then train a random forest model using train function.
+Comapre the two models for in-sample and out-of-sample errors.
+Here the out-of-sample error rates are calculated using the cross validation 
+data set - set aside from the training data set itself.</p>
+
+<p>Note: Both the models are trained using all the 52 features to predict &#39;classe&#39;</p>
+
+<p>1) Comparison of the two models</p>
+
+<p>The in-sample error rate for linear model is 0.</p>
+
+<p>The out-of-sample error rate for linear model is 0.0096.</p>
+
+<p>The prediction table for linear model on cross validation set is printed below:</p>
+<pre><code>##        
+## predCV1    A    B    C    D    E
+##       A 2231    7    0    0    0
+##       B    1 1503   13    0    0
+##       C    0    8 1353   35    3
+##       D    0    0    2 1249    4
+##       E    0    0    0    2 1435
+</code></pre>
+<p>The in-sample error rate for random forest model is 0.</p>
+
+<p>The out-of-sample error rate for random forest model is 0.0098.</p>
+
+<p>The prediction table for random forest model on cross validation set is printed below:</p>
+<pre><code>##       
+## predCV    A    B    C    D    E
+##      A 2231    7    0    0    0
+##      B    1 1503   13    0    0
+##      C    0    8 1352   37    3
+##      D    0    0    3 1247    3
+##      E    0    0    0    2 1436
+</code></pre>
+<p>Both the models have same in-sample error rates, and out-of-sample error rates are also close to each other. In general, random forest models make more accurate predictions; hence random forest model is used for our purposes here. This, rf model is then used to predict the values of classe on the test dataset.</p>
+
+</body>
+
+</html>
+
